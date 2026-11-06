@@ -8,3 +8,12 @@ policy = "per_worker"
 
 [functions.store]
 verify_jwt = false
+
+[auth]
+site_url = "https://michaelscentsation.vercel.app"
+additional_redirect_urls = [
+  "https://michaelscentsation.vercel.app/admin",
+  "http://127.0.0.1:5173/admin",
+  "http://localhost:5173/admin",
+]
+enable_signup = false
