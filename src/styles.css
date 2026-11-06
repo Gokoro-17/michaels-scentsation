@@ -1984,8 +1984,7 @@ select {
 }
 @media (max-width: 760px) {
   .hero {
-    min-height: 700px;
-    min-height: clamp(700px, calc(100svh - var(--header-height)), 860px);
+    min-height: 540px;
     align-items: flex-end;
   }
   .hero::before,
@@ -2002,21 +2001,21 @@ select {
     object-position: 70% center;
   }
   .hero-copy {
-    padding-block: 260px 48px;
+    padding-block: 160px 32px;
   }
   .hero-copy-inner {
     max-width: 560px;
     width: 100%;
   }
   .combo-banner {
-    min-height: 580px;
+    min-height: 420px;
     align-items: flex-end;
   }
   .combo-image {
     object-position: 60% center;
   }
   .combo-copy {
-    padding-block: 240px 48px;
+    padding-block: 120px 32px;
   }
 }
 @media (max-width: 650px) {
@@ -2216,7 +2215,7 @@ select {
     max-width: none;
   }
   .combo-copy {
-    padding-block: 220px 44px;
+    padding-block: 112px 32px;
   }
   .combo-banner h2 {
     font-size: clamp(40px, 10vw, 50px);

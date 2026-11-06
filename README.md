@@ -11,9 +11,9 @@ A React + TypeScript fragrance storefront with a live Supabase PostgreSQL databa
 - Database schema, RLS, storage buckets and the `store` Edge Function are live.
 - `.env.local` connects the local frontend using the public publishable key. It contains no privileged server key and is ignored by Git.
 - This React/Vite application uses `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; `NEXT_PUBLIC_` names belong to Next.js and are not read by this app. Never use a secret/service-role key as the frontend key.
-- Business details remain empty at the owner’s request. No administrator account has been assigned because the admin email is being supplied later.
+- Owner-provided WhatsApp, contact email and bank details are saved in the live website settings. The designated owner account has been created in Supabase Auth and authorized in `admin_users`; the owner chose to finish password setup directly in Supabase. Delivery information, delivery fee, business address and Instagram details still need confirming.
 - The public catalogue contains no invented products, stock, ratings or reviews. Add genuine products in admin and publish them when ready.
-- New checkout stays closed until bank name, account name, a 10-digit account number and delivery information are saved.
+- Valid bank details are saved. New checkout remains closed until delivery information is saved; the current delivery fee defaults to zero and still needs confirming.
 - The frontend is deployed on Vercel. The Supabase connection, canonical site URL and matching notification cron secret are configured in production and preview. Resend delivery is not configured or verified. Visual browser QA remains pending because no browser was available in this session.
 
 ## Run locally
@@ -38,12 +38,12 @@ npx.cmd tsx scripts/api-check.ts
 
 Use `vercel dev` when testing the Vercel-only SEO and notification cron handlers locally; Vite serves the frontend and calls the live commerce backend.
 
-## Administrator setup when the email is supplied
+## Administrator access
 
 The website's administrator login uses a Supabase Auth user in this project. Your Supabase dashboard login does not automatically grant access to the website. Set the store admin password directly in Supabase; authorize the user through `admin_users` as shown below.
 
-1. Open [Supabase Authentication → Users](https://supabase.com/dashboard/project/gpiqeudeheopvrawgnlb/auth/users), create or invite the intended owner account, and complete its authentication setup. Do not put passwords or service keys in source files.
-2. In the SQL editor, assign the existing Auth user:
+1. The designated owner account and store administrator membership already exist. The owner is completing password setup through [Supabase Authentication → Users](https://supabase.com/dashboard/project/gpiqeudeheopvrawgnlb/auth/users). Do not put passwords or service keys in source files. Configure the production Auth email sender before relying on email password-reset links.
+2. To authorize an additional existing Auth user, use the SQL editor:
 
 ```sql
 insert into public.admin_users(user_id)
@@ -52,7 +52,7 @@ on conflict do nothing;
 ```
 
 3. The production site URL, exact production/local `/admin` redirects and disabled public sign-ups have been applied from `supabase/config.toml`. Customers use guest checkout and do not need accounts. Configure a production mail sender for Auth password recovery/invitations.
-4. Sign in at `/admin`, save business/bank/delivery details, upload genuine product images, and publish products. Use a strong unique administrator password. Access is checked against both Supabase Auth and the live `admin_users` table on every privileged request.
+4. Sign in at `/admin`, confirm the saved business/bank details, complete delivery information, upload genuine product images, and publish products. Use a strong unique administrator password. Access is checked against both Supabase Auth and the live `admin_users` table on every privileged request.
 
 Removing a user from `admin_users` immediately removes their store-management access, even if they still have a valid Auth session. The app never grants access from user-editable metadata.
 
@@ -84,19 +84,18 @@ Save the number in Website settings. Nigerian local `080…` numbers automatical
 
 ## Email notifications
 
-The site URL and matching `CRON_SECRET` are already configured in Supabase and Vercel. Keep them synchronized if the domain changes or the secret is rotated. Set these remaining **Supabase Edge Function secrets** to enable email delivery:
+The site URL and matching `CRON_SECRET` are already configured in Supabase and Vercel, and the owner's `ADMIN_NOTIFICATION_EMAIL` is saved in Supabase. Keep the URL and cron secret synchronized if the domain changes or the secret is rotated. Set these remaining **Supabase Edge Function secrets** to enable email delivery:
 
 ```text
 RESEND_API_KEY
 NOTIFICATION_FROM
-ADMIN_NOTIFICATION_EMAIL
 ```
 
 Use a verified Resend sending domain for `NOTIFICATION_FROM`. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into Edge Functions by Supabase. Never add them as frontend `VITE_` variables.
 
 Order, receipt, confirmation, review and low-stock events are stored durably in `notifications`. With Resend configured, the Edge Function schedules delivery in the background after each relevant action so checkout does not wait for the mail provider. Emails include the order reference, customer name, product list, total and an admin sign-in link for private receipts. Resend idempotency keys and an atomic outbox claim prevent simultaneous workers from sending the same event twice. Failed events remain visible; the Notifications screen can retry them. Exhausted automatic attempts can be reset by the manual retry button.
 
-Vercel’s daily cron calls `/api/notifications`. The matching `CRON_SECRET` and both frontend Supabase variables are configured. Immediate sends happen during store actions; cron retries queued failures once the mail provider is configured. No notification emails were sent or verified during development because the owner deferred contact details and credentials.
+Vercel’s daily cron calls `/api/notifications`. The matching `CRON_SECRET` and both frontend Supabase variables are configured. Immediate sends happen during store actions; cron retries queued failures once the mail provider is configured. No notification emails were sent or verified during development because sending credentials are still pending.
 
 Newsletter sign-ups are stored in the database and visible in the studio. A promotional campaign composer/sender is not included; when adding a campaign provider, include consent controls and a working unsubscribe link in every marketing email. Removal requests can be handled through business contact and the Supabase subscriber table.
 
