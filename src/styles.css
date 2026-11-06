@@ -388,22 +388,55 @@ small {
 .header-actions button:hover {
   color: #d5b674;
 }
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
-  min-height: 620px;
-  background: var(--ivory);
-}
-.hero-copy {
+.hero,
+.combo-banner {
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 68px clamp(28px, 4.5vw, 72px);
+  background: #21190f;
+  color: var(--ivory);
+}
+.hero {
+  min-height: 680px;
+  min-height: clamp(640px, calc(100svh - var(--header-height)), 820px);
+}
+.hero::before,
+.combo-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgb(12 10 7 / 90%) 0%,
+    rgb(12 10 7 / 76%) 34%,
+    rgb(12 10 7 / 30%) 65%,
+    rgb(12 10 7 / 8%) 100%
+  );
+}
+.hero-image,
+.combo-image {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 55%;
+}
+.hero-copy {
+  padding-block: 96px;
 }
 .hero-copy-inner {
-  max-width: 470px;
-  width: 100%;
+  max-width: 620px;
+  width: 52%;
+}
+.hero .eyebrow,
+.combo-banner .eyebrow {
+  color: #e2c895;
 }
 .hero .eyebrow {
   display: flex;
@@ -418,21 +451,21 @@ small {
   background: var(--gold);
 }
 .hero h1 {
-  font-size: clamp(48px, 5.1vw, 74px);
+  font-size: clamp(54px, 6vw, 88px);
   letter-spacing: -1.5px;
   line-height: 1.06;
   font-weight: 400;
   text-wrap: balance;
 }
 .hero h1 em {
-  color: #98783e;
+  color: #e0c18b;
 }
 .hero-description {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.9;
-  max-width: 375px;
+  max-width: 430px;
   margin-top: 26px;
-  color: #696459;
+  color: #e8e0d5;
 }
 .hero-ctas {
   display: flex;
@@ -446,25 +479,32 @@ small {
   gap: 14px;
   font-size: 11px;
 }
+.hero-ctas .button:not(.secondary),
+.combo-banner .button {
+  background: #cfb175;
+  border-color: #cfb175;
+  color: #171410;
+}
+.hero-ctas .button:not(.secondary):hover,
+.combo-banner .button:hover {
+  background: #e2c895;
+  border-color: #e2c895;
+}
 .hero-ctas .button.secondary {
-  min-height: 44px;
+  min-height: 48px;
   padding: 11px 0;
   border: 0;
-  border-bottom: 1px solid #b1a080;
+  border-bottom: 1px solid #cdbb9b;
   background: transparent;
+  color: var(--ivory);
 }
-.hero-visual {
-  position: relative;
-  overflow: hidden;
-  min-height: 620px;
-  background: #c9ad7f;
+.hero-ctas .button.secondary:hover {
+  color: #e2c895;
+  border-color: #e2c895;
 }
-.hero-visual > img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  object-position: 65% 50%;
-  position: absolute;
+.hero a:focus-visible,
+.combo-banner a:focus-visible {
+  outline-color: #e2c895;
 }
 .section-heading {
   display: flex;
@@ -688,49 +728,23 @@ small {
   margin-top: 28px;
 }
 .combo-banner {
-  background: #161714;
-  color: #eee9df;
-  overflow: hidden;
+  min-height: clamp(460px, 42vw, 620px);
 }
-.combo-banner > .container {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: 335px;
-  gap: 60px;
-  align-items: center;
-}
-.combo-banner > .container > div:first-child {
-  padding-block: 48px;
-  z-index: 1;
+.combo-copy {
+  padding-block: 80px;
 }
 .combo-banner h2 {
-  font-size: 54px;
+  font-size: clamp(48px, 4.5vw, 68px);
+  max-width: 620px;
   margin-bottom: 20px;
 }
 .combo-banner p:not(.eyebrow) {
-  font-size: 12px;
-  max-width: 350px;
-  color: #c5bfb1;
+  font-size: 14px;
+  max-width: 400px;
+  color: #e8e0d5;
 }
 .combo-banner .button {
-  background: #c2a16a;
-  border-color: #c2a16a;
-  color: #181812;
   margin-top: 25px;
-}
-.combo-visual {
-  height: 335px;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-}
-.combo-visual img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  mix-blend-mode: normal;
-  opacity: 1;
 }
 .newsletter {
   padding-block: 64px;
@@ -1672,17 +1686,6 @@ select {
   width: 100%;
   overscroll-behavior-inline: contain;
 }
-@media (min-width: 1600px) {
-  .hero-copy {
-    padding-right: 85px;
-  }
-  .hero {
-    min-height: 680px;
-  }
-  .hero-visual {
-    min-height: 680px;
-  }
-}
 @media (max-width: 1200px) {
   .desktop-nav {
     margin-left: 0;
@@ -1690,22 +1693,6 @@ select {
   }
   .header-actions {
     gap: 10px;
-  }
-  .hero-copy {
-    padding: 50px 35px 70px;
-  }
-  .hero h1 {
-    font-size: 64px;
-  }
-  .hero-ctas {
-    flex-wrap: wrap;
-  }
-  .hero-ctas .button {
-    min-width: 0;
-    font-size: 11px;
-  }
-  .hero-visual {
-    min-height: 600px;
   }
   .story-copy {
     padding: 40px;
@@ -1748,27 +1735,6 @@ select {
   }
   .bag-label {
     display: none;
-  }
-  .hero h1 {
-    font-size: 54px;
-  }
-  .hero-description {
-    font-size: 13px;
-  }
-  .hero-copy {
-    padding: 48px 28px;
-  }
-  .hero-ctas {
-    gap: 10px;
-  }
-  .hero-ctas .button {
-    min-height: 43px;
-    padding: 12px;
-    min-width: 0;
-    font-size: 11px;
-  }
-  .hero-visual {
-    min-height: 560px;
   }
   .section {
     padding-block: 65px;
@@ -2018,19 +1984,39 @@ select {
 }
 @media (max-width: 760px) {
   .hero {
-    grid-template-columns: minmax(0, 1fr);
-    min-height: 0;
+    min-height: 700px;
+    min-height: clamp(700px, calc(100svh - var(--header-height)), 860px);
+    align-items: flex-end;
+  }
+  .hero::before,
+  .combo-banner::before {
+    background: linear-gradient(
+      180deg,
+      rgb(12 10 7 / 8%) 0%,
+      rgb(12 10 7 / 28%) 25%,
+      rgb(12 10 7 / 84%) 54%,
+      rgb(12 10 7 / 97%) 100%
+    );
+  }
+  .hero-image {
+    object-position: 70% center;
   }
   .hero-copy {
-    padding: 48px max(28px, env(safe-area-inset-right, 0px)) 48px
-      max(28px, env(safe-area-inset-left, 0px));
+    padding-block: 260px 48px;
   }
   .hero-copy-inner {
-    max-width: 600px;
+    max-width: 560px;
+    width: 100%;
   }
-  .hero-visual {
-    height: clamp(320px, 56vw, 440px);
-    min-height: 0;
+  .combo-banner {
+    min-height: 580px;
+    align-items: flex-end;
+  }
+  .combo-image {
+    object-position: 60% center;
+  }
+  .combo-copy {
+    padding-block: 240px 48px;
   }
 }
 @media (max-width: 650px) {
@@ -2084,24 +2070,13 @@ select {
   .newsletter-field input {
     font-size: 16px;
   }
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-    min-height: 0;
-  }
-  .hero-copy {
-    padding: 44px 24px;
-    justify-content: start;
-  }
-  .hero-copy-inner {
-    max-width: none;
-  }
   .hero .eyebrow {
     font-size: 10px;
     letter-spacing: 1.8px;
     margin-bottom: 20px;
   }
   .hero h1 {
-    font-size: clamp(44px, 10.7vw, 60px);
+    font-size: clamp(40px, 10.7vw, 60px);
     letter-spacing: -1px;
     line-height: 1.06;
   }
@@ -2124,14 +2099,7 @@ select {
     padding: 13px 17px;
     min-width: 0;
     gap: 12px;
-    min-height: 46px;
-  }
-  .hero-visual {
-    height: 320px;
-    min-height: 0;
-  }
-  .hero-visual > img {
-    object-position: 60% 53%;
+    min-height: 48px;
   }
   .section {
     padding-block: 48px;
@@ -2247,22 +2215,14 @@ select {
     font-size: 11px;
     max-width: none;
   }
-  .combo-banner > .container {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-    width: 100%;
-  }
-  .combo-banner > .container > div:first-child {
-    padding: 42px 30px;
+  .combo-copy {
+    padding-block: 220px 44px;
   }
   .combo-banner h2 {
-    font-size: 50px;
+    font-size: clamp(40px, 10vw, 50px);
   }
-  .combo-visual {
-    height: 260px;
-  }
-  .combo-watermark {
-    display: none;
+  .combo-banner p:not(.eyebrow) {
+    font-size: 13px;
   }
   .newsletter {
     grid-template-columns: minmax(0, 1fr);
@@ -2576,14 +2536,6 @@ select {
   .mobile-care {
     flex-wrap: wrap;
   }
-  .hero-copy {
-    padding-left: max(24px, env(safe-area-inset-left, 0px));
-    padding-right: max(24px, env(safe-area-inset-right, 0px));
-  }
-  .combo-banner > .container > div:first-child {
-    padding-left: max(30px, env(safe-area-inset-left, 0px));
-    padding-right: max(30px, env(safe-area-inset-right, 0px));
-  }
   .order-summary > div,
   .summary-item {
     flex-wrap: wrap;
@@ -2627,7 +2579,7 @@ select {
     display: none;
   }
   .hero h1 {
-    font-size: 42px;
+    font-size: clamp(34px, 11.7vw, 40px);
   }
   .page-intro h1 {
     font-size: 36px;

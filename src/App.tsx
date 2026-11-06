@@ -454,11 +454,19 @@ function Home() {
   const finalWord = slogan.pop();
   return (
     <>
-      <section className="hero">
-        <div className="hero-copy">
+      <section className="hero" aria-labelledby="hero-title">
+        <img
+          className="hero-image"
+          src="/images/hero.jpg"
+          alt=""
+          width="1400"
+          height="933"
+          fetchPriority="high"
+        />
+        <div className="hero-copy container">
           <div className="hero-copy-inner">
             <p className="eyebrow">{settings.brand_name}</p>
-            <h1>
+            <h1 id="hero-title">
               {slogan.join(' ')} <em>{finalWord}</em>
             </h1>
             <p className="hero-description">
@@ -473,13 +481,6 @@ function Home() {
               </ButtonLink>
             </div>
           </div>
-        </div>
-        <div className="hero-visual">
-          <img
-            src="/images/hero.jpg"
-            alt="Amber fragrance in sculpted glass on warm travertine, lit by afternoon sunlight"
-            fetchPriority="high"
-          />
         </div>
       </section>
       <section className="section container" id="collections">
@@ -567,21 +568,20 @@ function Home() {
           <ProductGrid products={best} />
         </section>
       )}
-      <section className="combo-banner">
-        <div className="container">
-          <div>
-            <p className="eyebrow">Perfume combos</p>
-            <h2>{settings.promo_title}</h2>
-            <p>{settings.promo_text}</p>
-            <ButtonLink to="/shop?category=combos">Explore combos</ButtonLink>
-          </div>
-          <div className="combo-visual">
-            <img
-              src="/images/combos.jpg"
-              alt="Perfume and deodorant paired beside a gift box"
-              loading="lazy"
-            />
-          </div>
+      <section className="combo-banner" aria-labelledby="combo-title">
+        <img
+          className="combo-image"
+          src="/images/combos.jpg"
+          alt=""
+          width="650"
+          height="433"
+          loading="lazy"
+        />
+        <div className="combo-copy container">
+          <p className="eyebrow">Perfume combos</p>
+          <h2 id="combo-title">{settings.promo_title}</h2>
+          <p>{settings.promo_text}</p>
+          <ButtonLink to="/shop?category=combos">Explore combos</ButtonLink>
         </div>
       </section>
       {reviews.length > 0 && (
