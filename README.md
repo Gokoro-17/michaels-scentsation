@@ -11,7 +11,7 @@ A React + TypeScript fragrance storefront with a live Supabase PostgreSQL databa
 - Database schema, RLS, storage buckets and the `store` Edge Function are live.
 - `.env.local` connects the local frontend using the public publishable key. It contains no privileged server key and is ignored by Git.
 - This React/Vite application uses `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; `NEXT_PUBLIC_` names belong to Next.js and are not read by this app. Never use a secret/service-role key as the frontend key.
-- Owner-provided WhatsApp, contact email and bank details are saved in the live website settings. The designated owner account has been created in Supabase Auth and authorized in `admin_users`; the owner chose to finish password setup directly in Supabase. Delivery information, delivery fee, business address and Instagram details still need confirming.
+- Owner-provided WhatsApp, contact email and bank details are saved in the live website settings. The designated owner account is configured in Supabase Auth and authorized in `admin_users`; password sign-in and access to the protected administrator endpoint have been verified. Delivery information, delivery fee, business address and Instagram details still need confirming.
 - The public catalogue contains no invented products, stock, ratings or reviews. Add genuine products in admin and publish them when ready.
 - Valid bank details are saved. New checkout remains closed until delivery information is saved; the current delivery fee defaults to zero and still needs confirming.
 - The frontend is deployed on Vercel. The Supabase connection, canonical site URL and matching notification cron secret are configured in production and preview. Resend delivery is not configured or verified. Visual browser QA remains pending because no browser was available in this session.
@@ -42,7 +42,7 @@ Use `vercel dev` when testing the Vercel-only SEO and notification cron handlers
 
 The website's administrator login uses a Supabase Auth user in this project. Your Supabase dashboard login does not automatically grant access to the website. Set the store admin password directly in Supabase; authorize the user through `admin_users` as shown below.
 
-1. The designated owner account and store administrator membership already exist. The owner is completing password setup through [Supabase Authentication → Users](https://supabase.com/dashboard/project/gpiqeudeheopvrawgnlb/auth/users). Do not put passwords or service keys in source files. Configure the production Auth email sender before relying on email password-reset links.
+1. The designated owner account and store administrator membership are configured, and password sign-in has been verified. Manage accounts through [Supabase Authentication → Users](https://supabase.com/dashboard/project/gpiqeudeheopvrawgnlb/auth/users). Passwords and service keys are not stored in source files. Configure the production Auth email sender before relying on email password-reset links.
 2. To authorize an additional existing Auth user, use the SQL editor:
 
 ```sql
@@ -132,6 +132,8 @@ The follow-up migration `20261106115937_restrict_auto_rls_helper.sql` removes br
 The storefront header hides after scrolling downward and returns when scrolling upward. It remains visible near the top, while search or navigation is open, and during keyboard interaction. Reduced-motion preferences disable the slide transition. TypeScript build caches are stored with the installed dependencies rather than in the project root.
 
 The interface uses Lucide controls and locally bundled Font Awesome WhatsApp/Instagram brand marks; attribution and source files are under `public/icons/`. Mobile navigation, product details and checkout adapt at tablet widths, narrow-phone product grids reduce to one column, and quantity controls have 44-pixel targets. Product galleries, category tabs and admin tables scroll inside their own regions. The layout includes safe-area spacing, coarse-pointer controls and fallback viewport heights for mobile dialogs.
+
+The homepage media carousel sits before the combo promotion, outside the hero. It combines two eight-second silent videos with an animated campaign photograph. The MP4 clips are self-hosted, use H.264 with progressive playback, and total less than 750 KB. Only the active clip loads when playback is allowed and the section is visible. Hidden tabs and off-screen sections pause playback; reduced-motion and data-saving preferences require explicit playback. Controls include play/pause, previous/next, slide selection, keyboard arrows and touch swipes. Hover pauses slide rotation. The film sources, posters and generated-photo prompt are documented in `docs/ASSETS.md`.
 
 CSS breakpoint rules were audited from 280 to 1,440 pixels, and the frontend modules and local icon files passed HTTP checks. These checks do not substitute for rendered browser or physical-device testing, which remains pending.
 

@@ -21,6 +21,7 @@ import { api, whatsappUrl } from './lib';
 import { meta } from './meta';
 import { BrandLogo } from './BrandLogo';
 import { BrandIcon } from './BrandIcon';
+import { FragranceCarousel } from './FragranceCarousel';
 import { useStore } from './store';
 import { useAutoHideHeader } from './useAutoHideHeader';
 import {
@@ -568,6 +569,7 @@ function Home() {
           <ProductGrid products={best} />
         </section>
       )}
+      <FragranceCarousel />
       <section className="combo-banner" aria-labelledby="combo-title">
         <img
           className="combo-image"

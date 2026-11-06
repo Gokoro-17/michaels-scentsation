@@ -4,7 +4,7 @@
     { "source": "/robots.txt", "destination": "/api/seo?mode=robots" },
     { "source": "/product/:slug", "destination": "/api/seo?slug=:slug" },
     {
-      "source": "/((?!api/|assets/|images/|icons/|favicon.svg|robots.txt|sitemap.xml).*)",
+      "source": "/((?!api/|assets/|images/|videos/|icons/|favicon.svg|robots.txt|sitemap.xml).*)",
       "destination": "/index.html"
     }
   ],
