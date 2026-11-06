@@ -4,6 +4,8 @@ A React + TypeScript fragrance storefront with a live Supabase PostgreSQL databa
 
 ## Current state
 
+- Public source repository: [Gokoro-17/michaels-scentsation](https://github.com/Gokoro-17/michaels-scentsation).
+- Production storefront: [michaelscentsation.vercel.app](https://michaelscentsation.vercel.app), hosted by the `michaelscentsation` Vercel project under `gokoro-17s-projects` and connected to the GitHub repository.
 - Owner-supplied Supabase project: `gpiqeudeheopvrawgnlb`. Open the [project dashboard](https://supabase.com/dashboard/project/gpiqeudeheopvrawgnlb) to manage it.
 - The local environment and Supabase CLI now target this project. The previous project's connection has been removed; its remote resources were not deleted.
 - Database schema, RLS, storage buckets and the `store` Edge Function are live.
@@ -12,7 +14,7 @@ A React + TypeScript fragrance storefront with a live Supabase PostgreSQL databa
 - Business details remain empty at the owner’s request. No administrator account has been assigned because the admin email is being supplied later.
 - The public catalogue contains no invented products, stock, ratings or reviews. Add genuine products in admin and publish them when ready.
 - New checkout stays closed until bank name, account name, a 10-digit account number and delivery information are saved.
-- The frontend is prepared for Vercel but has not been published. Resend delivery is not configured or verified. Visual browser QA is pending because no browser was available in this session.
+- The frontend is deployed on Vercel. The Supabase connection, canonical site URL and matching notification cron secret are configured in production and preview. Resend delivery is not configured or verified. Visual browser QA remains pending because no browser was available in this session.
 
 ## Run locally
 
@@ -49,7 +51,7 @@ select id from auth.users where lower(email) = lower('THE_OWNER_EMAIL')
 on conflict do nothing;
 ```
 
-3. Set the production site URL and allowed `/admin` redirect URLs in Supabase Auth. Disable public account sign-ups; customers use guest checkout and do not need accounts. Configure a production mail sender for Auth password recovery/invitations.
+3. The production site URL, exact production/local `/admin` redirects and disabled public sign-ups have been applied from `supabase/config.toml`. Customers use guest checkout and do not need accounts. Configure a production mail sender for Auth password recovery/invitations.
 4. Sign in at `/admin`, save business/bank/delivery details, upload genuine product images, and publish products. Use a strong unique administrator password. Access is checked against both Supabase Auth and the live `admin_users` table on every privileged request.
 
 Removing a user from `admin_users` immediately removes their store-management access, even if they still have a valid Auth session. The app never grants access from user-editable metadata.
@@ -82,36 +84,34 @@ Save the number in Website settings. Nigerian local `080…` numbers automatical
 
 ## Email notifications
 
-Set these **Supabase Edge Function secrets**:
+The site URL and matching `CRON_SECRET` are already configured in Supabase and Vercel. Keep them synchronized if the domain changes or the secret is rotated. Set these remaining **Supabase Edge Function secrets** to enable email delivery:
 
 ```text
 RESEND_API_KEY
 NOTIFICATION_FROM
 ADMIN_NOTIFICATION_EMAIL
-SITE_URL
-CRON_SECRET
 ```
 
 Use a verified Resend sending domain for `NOTIFICATION_FROM`. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into Edge Functions by Supabase. Never add them as frontend `VITE_` variables.
 
 Order, receipt, confirmation, review and low-stock events are stored durably in `notifications`. With Resend configured, the Edge Function schedules delivery in the background after each relevant action so checkout does not wait for the mail provider. Emails include the order reference, customer name, product list, total and an admin sign-in link for private receipts. Resend idempotency keys and an atomic outbox claim prevent simultaneous workers from sending the same event twice. Failed events remain visible; the Notifications screen can retry them. Exhausted automatic attempts can be reset by the manual retry button.
 
-Vercel’s daily cron calls `/api/notifications`. Set the same `CRON_SECRET` in Vercel and Supabase, and configure the two frontend Supabase variables in Vercel too. Immediate sends happen during store actions; cron retries queued failures. No notification emails were sent or verified during development because the owner deferred contact details and credentials.
+Vercel’s daily cron calls `/api/notifications`. The matching `CRON_SECRET` and both frontend Supabase variables are configured. Immediate sends happen during store actions; cron retries queued failures once the mail provider is configured. No notification emails were sent or verified during development because the owner deferred contact details and credentials.
 
 Newsletter sign-ups are stored in the database and visible in the studio. A promotional campaign composer/sender is not included; when adding a campaign provider, include consent controls and a working unsubscribe link in every marketing email. Removal requests can be handled through business contact and the Supabase subscriber table.
 
 ## Vercel deployment
 
-Import this directory/repository as a Vite project. Use `npm run build` and the `dist` output directory. Configure:
+The GitHub repository is connected to the `michaelscentsation` Vercel project. It uses the Vite preset, Node.js 22.x, `npm ci`, `npm run build` and the `dist` output directory. The following production/preview variables are configured; use the same values if recreating the deployment:
 
 ```text
 VITE_SUPABASE_URL=https://gpiqeudeheopvrawgnlb.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=<the project publishable key>
-SITE_URL=https://<the final storefront domain>
+SITE_URL=https://michaelscentsation.vercel.app
 CRON_SECRET=<same strong random secret as Supabase>
 ```
 
-`vercel.json` includes SPA routing, security headers, server-generated product metadata, dynamic sitemap/robots routes and the notification cron. The SEO handler uses only the public publishable key and RLS. Published product metadata, prices and availability are included in the HTML response for link previews/search crawlers, alongside Product JSON-LD. On-site navigation also updates metadata. The sitemap reads current published products and caches for five minutes. Set the canonical production `SITE_URL` rather than a preview domain.
+`vercel.json` includes SPA routing, security headers, server-generated product metadata, dynamic sitemap/robots routes and the notification cron. `.vercelignore` excludes local credentials, CLI caches and generated output from source uploads; Vercel generates a fresh production build. The SEO handler uses only the public publishable key and RLS. Published product metadata, prices and availability are included in the HTML response for link previews/search crawlers, alongside Product JSON-LD. On-site navigation also updates metadata. The sitemap reads current published products and caches for five minutes. Use the canonical production `SITE_URL` rather than a preview domain.
 
 Deploy backend changes with:
 
@@ -138,11 +138,12 @@ CSS breakpoint rules were audited from 280 to 1,440 pixels, and the frontend mod
 
 - TypeScript frontend/server checks and optimized production build passed.
 - Sixteen unit tests passed for header scroll direction, movement thresholds, pinned controls, contact validation, checkout payloads, private access codes, file signatures and accurate Naira/kobo formatting.
-- Four SEO handler checks passed for the dynamic sitemap, robots output, missing-product HTTP status and invalid product paths. Vercel deployment itself remains unverified.
+- Four SEO handler checks passed for the dynamic sitemap, robots output, missing-product HTTP status and invalid product paths.
+- Vercel production build and deployment passed. Seven public HTTP checks passed for the homepage, shop, admin route, robots, sitemap, missing-product HTTP 404 and unauthorized notification endpoint HTTP 401. Production HTML includes the brand and security headers; the sitemap uses the canonical production domain.
 - Eight HTTP checks against the owner-supplied Supabase project passed: public catalogue access, denied private reads/RPCs, required admin sign-in, checkout validation and private tracking authorization.
 - Eighteen live PostgreSQL checks in `tests/database.sql` passed against the owner-supplied project. They cover server pricing, idempotency, receipt status, bundle inventory, repeat confirmation, stock shortages, review eligibility/duplicates/moderation, fulfilment transitions, RLS and private storage. All fixture rows and settings changes rolled back; no test products, customers, orders or administrators remain.
 - The Supabase security advisor reported no warnings/errors. Informational notices about RLS-enabled tables with no policies are intentional default-deny private tables; browser grants are revoked. Foreign-key indexes were added after the performance review.
 - Production dependencies had zero reported npm audit vulnerabilities at verification time.
-- No browser was available, so desktop/mobile visual appearance, keyboard interactions and the complete admin click-through flow are not browser-verified. Vercel production routing, Auth email delivery and Resend email delivery still require verification after deployment/configuration.
+- No browser was available, so desktop/mobile visual appearance, keyboard interactions and the complete admin click-through flow are not browser-verified. Auth email delivery and Resend email delivery still require verification after their sender credentials are configured.
 
 Campaign artwork and the built-in image generation prompts are documented in [docs/ASSETS.md](docs/ASSETS.md). All final optimized assets are included under `public/images/`.
