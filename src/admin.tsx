@@ -92,7 +92,7 @@ function Login() {
   return (
     <main className="admin-login">
       <Link className="admin-back" to="/">
-        <ArrowLeft size={16} /> Back to boutique
+        <ArrowLeft size={16} /> Back to store
       </Link>
       <form onSubmit={submit}>
         <BrandLogo className="studio-mark" />
@@ -356,7 +356,7 @@ export default function Admin() {
           ))}
         </nav>
         <Link className="admin-store-link" to="/">
-          <ExternalLink size={15} /> View boutique
+          <ExternalLink size={15} /> View store
         </Link>
         <button
           className="admin-signout"
@@ -371,7 +371,7 @@ export default function Admin() {
       <main className="admin-main">
         <header className="admin-topbar">
           <div>
-            <p className="eyebrow">Your boutique, thoughtfully managed</p>
+            <p className="eyebrow">Your store, thoughtfully managed</p>
             <h1>{tabs.find((t) => t[0] === tab)?.[1]}</h1>
           </div>
           <button

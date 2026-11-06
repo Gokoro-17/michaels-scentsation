@@ -856,7 +856,7 @@ export default function App() {
                   <Empty
                     title="This page wandered off."
                     action={
-                      <ButtonLink to="/">Back to the boutique</ButtonLink>
+                      <ButtonLink to="/">Back to the store</ButtonLink>
                     }
                   >
                     Let’s help you find something beautiful.

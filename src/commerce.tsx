@@ -551,7 +551,7 @@ export function Checkout() {
         </Empty>
       ) : !bankReady ? (
         <Empty
-          title="The boutique is getting ready."
+          title="The store is getting ready."
           action={<ButtonLink to="/contact">Contact us</ButtonLink>}
         >
           Ordering will open once bank transfer and delivery details are
