@@ -22,26 +22,26 @@ type FragranceSlide = {
 
 const slides: FragranceSlide[] = [
   {
-    image: '/images/ritual-wrist.jpg',
-    video: '/videos/ritual-wrist.mp4',
-    alt: 'A woman sprays fragrance onto her wrist in soft natural light',
+    image: '/images/ritual-presence.jpg',
+    video: '/videos/ritual-presence.mp4',
+    alt: 'A Black woman applies perfume at her vanity in natural daylight',
     title: 'The finishing touch.',
     action: 'Find your scent',
     to: '/shop',
-    position: 'center 45%',
+    position: '35% 40%',
   },
   {
-    image: '/images/ritual-mist.jpg',
-    video: '/videos/ritual-mist.mp4',
-    alt: 'A hand releases a fine perfume mist beside a sunlit window',
-    title: 'Make it your signature.',
-    action: 'Explore luxury perfumes',
-    to: '/shop?category=luxury-perfumes',
-    position: '35% center',
+    image: '/images/ritual-essence.jpg',
+    video: '/videos/ritual-essence.mp4',
+    alt: 'A Black woman carefully pours fragrant liquid into a glass bottle',
+    title: 'Scent, in the details.',
+    action: 'Explore oil perfumes',
+    to: '/shop?category=oil-perfumes',
+    position: 'center 40%',
   },
   {
-    image: '/images/fragrance-ritual.jpg',
-    alt: 'Fragrance is applied to a wrist, with amber glass and ivory linen in warm light',
+    image: '/images/fragrance-ritual-v2.jpg',
+    alt: 'Deep brown hands apply perfume to a wrist beside ivory linen and warm stone',
     title: 'Your everyday ritual.',
     action: 'Explore the collection',
     to: '/shop',
@@ -237,7 +237,7 @@ export function FragranceCarousel() {
               src={slide.image}
               alt={slide.alt}
               width={slide.video ? 960 : 1536}
-              height={slide.video ? 506 : 1024}
+              height={slide.video ? 540 : 1024}
               loading="lazy"
               decoding="async"
               aria-hidden={Boolean(slide.video && loadedVideo === index)}
@@ -249,7 +249,7 @@ export function FragranceCarousel() {
                 src={slide.video}
                 poster={slide.image}
                 width="960"
-                height="506"
+                height="540"
                 muted
                 playsInline
                 loop={hovered}
