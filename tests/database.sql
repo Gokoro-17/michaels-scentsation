@@ -1,0 +1,45 @@
+-- Run against the new project as postgres. All fixtures and changes roll back.
+begin;
+create temp table checks(name text,passed boolean);
+do $$
+declare a uuid:=gen_random_uuid(); p uuid:=gen_random_uuid(); b uuid:=gen_random_uuid(); d uuid:=gen_random_uuid(); c uuid; oid uuid; oid2 uuid; got uuid; qty int; amount numeric; s text;
+begin
+ insert into auth.users(id,email,aud,role) values(a,'msc-internal-test@example.invalid','authenticated','authenticated');
+ insert into public.admin_users(user_id) values(a);
+ select id into c from public.categories where slug='luxury-perfumes';
+ insert into public.products(id,category_id,name,slug,price,stock,published) values(p,c,'INTERNAL TEST PERFUME','internal-test-perfume',1000,5,true),(d,c,'INTERNAL DRAFT','internal-draft',900,5,false);
+ select id into c from public.categories where slug='combos';
+ insert into public.products(id,category_id,name,slug,price,stock,published) values(b,c,'INTERNAL TEST COMBO','internal-test-combo',1500,2,true);
+ insert into public.combo_items(combo_id,product_id,quantity) values(b,p,2);
+ update public.website_settings set bank_name='TEST',account_name='TEST',account_number='0000000000',delivery_info='INTERNAL TEST ONLY',delivery_fee=500;
+ oid:=public.place_order('{"name":"Test Buyer","email":"test@example.invalid","phone":"2348012345678","address":"Internal test address"}',jsonb_build_array(jsonb_build_object('productId',b,'quantity',1),jsonb_build_object('productId',p,'quantity',1)),repeat('a',64));
+ select total into amount from public.orders where id=oid;
+ if amount<>3000 then raise exception 'FAIL: server-priced total'; end if; insert into checks values('server-priced total including delivery',true);
+ select stock into qty from public.products where id=p; if qty<>5 then raise exception 'FAIL: early stock deduction'; end if; insert into checks values('checkout leaves stock unchanged',true);
+ got:=public.place_order('{"name":"ignored"}',jsonb_build_array(jsonb_build_object('productId',p,'quantity',1)),repeat('a',64)); if got<>oid then raise exception 'FAIL: idempotency'; end if; insert into checks values('checkout retry returns same order',true);
+ begin perform public.submit_review(oid,p,5,'A sufficiently long test review.'); raise exception 'FAIL: unpaid review allowed'; exception when raise_exception then if sqlerrm like 'FAIL:%' then raise; end if; end; insert into checks values('unpaid review rejected',true);
+ perform public.submit_receipt(oid,oid::text||'/test.pdf','application/pdf',128);
+ select status into s from public.orders where id=oid; if s<>'Payment Verification Pending' then raise exception 'FAIL: receipt status'; end if;
+ select stock into qty from public.products where id=p; if qty<>5 then raise exception 'FAIL: receipt deducted stock'; end if; insert into checks values('receipt remains pending without stock deduction',true);
+ perform public.manage_order(oid,'confirm',a,'Internal test');
+ select stock into qty from public.products where id=p; if qty<>2 then raise exception 'FAIL: bundle stock'; end if; select stock into qty from public.products where id=b; if qty<>1 then raise exception 'FAIL: bundle stock'; end if; insert into checks values('confirmation deducts bundle and combined component quantities',true);
+ perform public.manage_order(oid,'confirm',a); select stock into qty from public.products where id=p; if qty<>2 then raise exception 'FAIL: duplicate confirmation'; end if; insert into checks values('repeat confirmation cannot double-decrement stock',true);
+ perform public.submit_review(oid,p,5,'A sufficiently long verified review.');
+ begin perform public.submit_review(oid,p,4,'A duplicate sufficiently long review.'); raise exception 'FAIL: duplicate review allowed'; exception when unique_violation then null; end; insert into checks values('verified review enforced and duplicate rejected',true);
+ if exists(select 1 from public.product_reviews where order_id=oid and approved) then raise exception 'FAIL: review auto-approved'; end if; insert into checks values('reviews require moderation',true);
+ begin perform public.place_order('{"name":"Test Buyer","email":"test@example.invalid","phone":"2348012345678","address":"Internal test address"}',jsonb_build_array(jsonb_build_object('productId',b,'quantity',1),jsonb_build_object('productId',p,'quantity',1)),repeat('b',64)); raise exception 'FAIL: bundle oversell'; exception when raise_exception then if sqlerrm like 'FAIL:%' then raise; end if; end; insert into checks values('aggregate bundle component over-order rejected',true);
+ begin perform public.place_order('{"name":"Test Buyer","email":"test@example.invalid","phone":"2348012345678","address":"Internal test address"}',jsonb_build_array(jsonb_build_object('productId',d,'quantity',1)),repeat('c',64)); raise exception 'FAIL: draft ordered'; exception when raise_exception then if sqlerrm like 'FAIL:%' then raise; end if; end; insert into checks values('unpublished product cannot be ordered',true);
+ oid2:=public.place_order('{"name":"Test Buyer","email":"test@example.invalid","phone":"2348012345678","address":"Internal test address"}',jsonb_build_array(jsonb_build_object('productId',p,'quantity',2)),repeat('d',64));
+ perform public.submit_receipt(oid2,oid2::text||'/test.pdf','application/pdf',128);
+ update public.products set stock=1 where id=p;
+ begin perform public.manage_order(oid2,'confirm',a); raise exception 'FAIL: insufficient stock confirmed'; exception when raise_exception then if sqlerrm like 'FAIL:%' then raise; end if; end;
+ select payment_status into s from public.orders where id=oid2; if s<>'pending' then raise exception 'FAIL: failed confirmation changed payment'; end if; insert into checks values('confirmation rechecks stock and rolls back on shortage',true);
+ begin perform public.manage_order(oid,'Delivered',a); raise exception 'FAIL: status skip'; exception when raise_exception then if sqlerrm like 'FAIL:%' then raise; end if; end; insert into checks values('invalid order transitions rejected',true);
+ perform public.manage_order(oid,'Processing',a);perform public.manage_order(oid,'Ready for Delivery',a);perform public.manage_order(oid,'Delivered',a);insert into checks values('sequential fulfilment succeeds',true);
+ if has_table_privilege('anon','public.orders','SELECT') or has_table_privilege('authenticated','public.payment_receipts','SELECT') then raise exception 'FAIL: private order access'; end if; insert into checks values('order and receipt tables deny browser reads',true);
+ if has_function_privilege('anon','public.place_order(jsonb,jsonb,text)','EXECUTE') or has_function_privilege('authenticated','public.manage_order(uuid,text,uuid,text)','EXECUTE') then raise exception 'FAIL: privileged RPC exposed'; end if; insert into checks values('transaction RPCs restricted to server role',true);
+ if exists(select 1 from pg_tables where schemaname='public' and not rowsecurity) then raise exception 'FAIL: missing RLS'; end if; insert into checks values('RLS on every public table',true);
+ if exists(select 1 from storage.buckets where id='payment-receipts' and public) then raise exception 'FAIL: public receipts'; end if; insert into checks values('receipt storage is private',true);
+end $$;
+select * from checks;
+rollback;

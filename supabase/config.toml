@@ -1,0 +1,10 @@
+project_id = "michaels-scentsation"
+
+[db.seed]
+enabled = false
+
+[edge_runtime]
+policy = "per_worker"
+
+[functions.store]
+verify_jwt = false
